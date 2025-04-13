@@ -1,21 +1,44 @@
 {% extends "layout.html" %}
 {% block content %}
-<h2>Customer Profile</h2>
+<div class="profile-container">
+    <h2 class="profile-heading">Customer Profile</h2>
 
-<p><strong>Name:</strong> {{ user.name }}</p>
-<p><strong>Email:</strong> {{ user.email }}</p>
-<p><strong>Mobile:</strong> {{ user.mobile }}</p>
+    {% if get_flashed_messages() %}
+    <div class="flash-messages">
+        {% for category, message in get_flashed_messages(with_categories=true) %}
+        <div class="flash-message flash-{{ category }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
-<h3>Your Orders</h3>
-<ul>
-    {% for order in orders %}
-        <li>
-            <strong>{{ order.service.title }}</strong><br>
-            Category: {{ order.service.category }}<br>
-            Status: {{ order.status }}
-        </li>
+    <div class="profile-info">
+        <p><strong>Name:</strong> {{ user.name }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        <p><strong>Mobile:</strong> {{ user.mobile }}</p>
+    </div>
+
+    <div class="section-header">
+        <h3 class="section-heading">Your Orders</h3>
+        <a href="{{ url_for('services') }}" class="action-button"><i class="fas fa-search"></i> Browse Services</a>
+    </div>
+    
+    {% if orders %}
+    <div class="orders-list">
+        {% for order in orders %}
+        <div class="order-card">
+            <h4 class="order-title">{{ order.service.title }}</h4>
+            <p><strong>Category:</strong> {{ order.service.category }}</p>
+            <p><strong>Price:</strong> ₹{{ order.service.price }}</p>
+            <p class="order-status {{ order.status.lower() }}"><strong>Status:</strong> {{ order.status }}</p>
+            <p><strong>Organizer:</strong> {{ order.service.organizer.name }}</p>
+            <p><strong>Contact:</strong> {{ order.service.organizer.email }} | {{ order.service.organizer.mobile }}</p>
+        </div>
+        {% endfor %}
+    </div>
     {% else %}
-        <li>No orders placed yet.</li>
-    {% endfor %}
-</ul>
+    <p class="no-orders">No orders placed yet.</p>
+    {% endif %}
+</div>
 {% endblock %}

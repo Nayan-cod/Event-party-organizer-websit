@@ -1,10 +1,11 @@
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from model import db, User, Service, Order, Review
 from forms import RegisterForm, LoginForm,ReviewForm
 
 import os
 from werkzeug.utils import secure_filename
+from sqlalchemy import func
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
@@ -25,8 +26,28 @@ def allowed_file(filename):
 
 @app.route('/')
 def home():
-    services = Service.query.all()
-    return render_template('home.html', services=services)
+    # Get the most ordered services by counting orders for each service
+    # Use a subquery to count orders for each service
+    
+    # Get count of orders for each service
+    service_order_counts = db.session.query(
+        Order.service_id, 
+        func.count(Order.id).label('order_count')
+    ).group_by(Order.service_id).subquery()
+    
+    # Join with services and order by count
+    top_services = db.session.query(Service).\
+        outerjoin(service_order_counts, Service.id == service_order_counts.c.service_id).\
+        order_by(service_order_counts.c.order_count.desc().nullslast()).\
+        limit(4).all()
+    
+    # If there are fewer than 4 ordered services, add others to make up the count
+    if len(top_services) < 4:
+        existing_ids = [s.id for s in top_services]
+        additional_services = Service.query.filter(~Service.id.in_(existing_ids)).limit(4 - len(top_services)).all()
+        top_services.extend(additional_services)
+    
+    return render_template('home.html', services=top_services)
 
 @app.route('/about')
 def about():
@@ -34,7 +55,25 @@ def about():
 
 @app.route('/services')
 def services():
-    services = Service.query.all()
+    # Get filter parameters
+    category = request.args.get('category', '')
+    price_range = request.args.get('price_range', '')
+    
+    # Start with all services
+    query = Service.query
+    
+    # Apply category filter if selected
+    if category:
+        query = query.filter(Service.category == category)
+    
+    # Apply price range filter if selected
+    if price_range:
+        price_min, price_max = map(int, price_range.split('-'))
+        query = query.filter(Service.price >= price_min, Service.price <= price_max)
+    
+    # Get filtered services
+    services = query.all()
+    
     return render_template('services.html', services=services)
 
 @app.route('/contact')
@@ -68,18 +107,12 @@ def login():
         if user:
             session['user_id'] = user.id
             session['role'] = user.role
-            return redirect(url_for('dashboard'))
+            if user.role == 'organizer':
+                return redirect(url_for('profile_organizer'))
+            else:
+                return redirect(url_for('profile_customer'))
     return render_template('login.html', form=form)  # Pass 'form' to template
 
-
-@app.route('/dashboard')
-def dashboard():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    if session['role'] == 'organizer':
-        return render_template('dashboard_organizer.html')
-    else:
-        return render_template('dashboard_customer.html')
 
 @app.route('/add_service', methods=['GET', 'POST'])
 def add_service():
@@ -109,7 +142,8 @@ def add_service():
         )
         db.session.add(new_service)
         db.session.commit()
-        return redirect(url_for('dashboard'))
+        flash('Service added successfully!', 'success')
+        return redirect(url_for('profile_organizer'))
 
     return render_template('add_service.html')
 
@@ -139,10 +173,17 @@ def review(service_id):
 def place_order(service_id):
     if 'user_id' not in session or session['role'] != 'customer':
         return redirect(url_for('login'))
-
+    
+    # Get the service information
+    service = Service.query.get_or_404(service_id)
+    
+    # Create the new order
     new_order = Order(service_id=service_id, customer_id=session['user_id'], status='Pending')
     db.session.add(new_order)
     db.session.commit()
+    
+    # Flash a success message
+    flash(f'Your order for "{service.title}" has been placed successfully!', 'success')
     return redirect(url_for('profile_customer'))
 
 
@@ -166,6 +207,26 @@ def profile_organizer():
 
     return render_template('profile_organizer.html', user=user, services=services, orders=orders)
 
+@app.route('/update_order_status/<int:order_id>', methods=['POST'])
+def update_order_status(order_id):
+    if 'user_id' not in session or session['role'] != 'organizer':
+        return redirect(url_for('login'))
+    
+    order = Order.query.get_or_404(order_id)
+    service = Service.query.get(order.service_id)
+    
+    # Verify this order belongs to one of the organizer's services
+    if service.organizer_id != session['user_id']:
+        flash('You do not have permission to update this order', 'error')
+        return redirect(url_for('profile_organizer'))
+    
+    new_status = request.form.get('status')
+    if new_status in ['Pending', 'Confirmed', 'Completed', 'Cancelled']:
+        order.status = new_status
+        db.session.commit()
+        flash(f'Order status updated to {new_status}', 'success')
+    
+    return redirect(url_for('profile_organizer'))
 
 @app.route('/logout')
 def logout():

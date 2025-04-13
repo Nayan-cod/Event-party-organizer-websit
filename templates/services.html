@@ -1,30 +1,96 @@
 {% extends "layout.html" %}
 {% block content %}
-<h2 class="services-heading">Our Services</h2>
+<section class="services-section">
+  <div class="container">
+    <div class="section-title">
+      <h2>Our Services</h2>
+      <p>Browse our wide range of event services</p>
+    </div>
 
-{% if services %}
-<div class="services-grid">
-    {% for service in services %}
-<div class="service-card">
-  {% if service.image %}
-    <img src="{{ url_for('static', filename='uploads/' + service.image) }}"
-         alt="Service Image" class="service-image">
-  {% endif %}
-  <h3 class="service-title">{{ service.title }}</h3>
-  <p class="service-category">{{ service.category }}</p>
-  <p class="service-price">₹{{ service.price }}</p>
-  <p class="service-description">{{ service.description }}</p>
+    <!-- Filter Section -->
+    <div class="filter-container">
+      <form id="filterForm" class="filter-form" method="GET" action="{{ url_for('services') }}">
+        <div class="filter-group">
+          <label for="category">Category</label>
+          <select id="category" name="category" class="filter-select">
+            <option value="">All Categories</option>
+            <option value="Food & Catering" {% if request.args.get('category') == 'Food & Catering' %}selected{% endif %}>Food & Catering</option>
+            <option value="Decoration" {% if request.args.get('category') == 'Decoration' %}selected{% endif %}>Decoration</option>
+            <option value="Entertainment" {% if request.args.get('category') == 'Entertainment' %}selected{% endif %}>Entertainment</option>
+            <option value="Photography" {% if request.args.get('category') == 'Photography' %}selected{% endif %}>Photography</option>
+            <option value="Venue" {% if request.args.get('category') == 'Venue' %}selected{% endif %}>Venue</option>
+            <option value="Transportation" {% if request.args.get('category') == 'Transportation' %}selected{% endif %}>Transportation</option>
+            <option value="Full Event Planning" {% if request.args.get('category') == 'Full Event Planning' %}selected{% endif %}>Full Event Planning</option>
+          </select>
+        </div>
+        
+        <div class="filter-group">
+          <label for="price_range">Price Range</label>
+          <select id="price_range" name="price_range" class="filter-select">
+            <option value="">Any Price</option>
+            <option value="0-1000" {% if request.args.get('price_range') == '0-1000' %}selected{% endif %}>Under ₹1,000</option>
+            <option value="1000-5000" {% if request.args.get('price_range') == '1000-5000' %}selected{% endif %}>₹1,000 - ₹5,000</option>
+            <option value="5000-10000" {% if request.args.get('price_range') == '5000-10000' %}selected{% endif %}>₹5,000 - ₹10,000</option>
+            <option value="10000-25000" {% if request.args.get('price_range') == '10000-25000' %}selected{% endif %}>₹10,000 - ₹25,000</option>
+            <option value="25000-50000" {% if request.args.get('price_range') == '25000-50000' %}selected{% endif %}>₹25,000 - ₹50,000</option>
+            <option value="50000-100000" {% if request.args.get('price_range') == '50000-100000' %}selected{% endif %}>₹50,000 - ₹1,00,000</option>
+            <option value="100000-1000000" {% if request.args.get('price_range') == '100000-1000000' %}selected{% endif %}>Above ₹1,00,000</option>
+          </select>
+        </div>
+        
+        <button type="submit" class="filter-button">
+          <i class="fas fa-filter"></i> Apply Filters
+        </button>
+        
+        <a href="{{ url_for('services') }}" class="reset-button">
+          <i class="fas fa-sync-alt"></i> Reset
+        </a>
+      </form>
+    </div>
 
-  {% if service.organizer %}
-  <p class="text-sm"><strong>Email:</strong> {{ service.organizer.email }}</p>
-  <p class="text-sm"><strong>Mobile:</strong> {{ service.organizer.mobile }}</p>
-  {% endif %}
-
-  <a href="{{ url_for('review', service_id=service.id) }}" class="review-button"> Review</a>
-</div>
-{% endfor %}
-
-{% else %}
-<p class="no-service-message">No services available right now.</p>
-{% endif %}
+    {% if services %}
+    <div class="services-grid">
+      {% for service in services %}
+      <div class="service-card">
+        <div class="service-image-container">
+          {% if service.image %}
+            <img src="{{ url_for('static', filename='uploads/' + service.image) }}"
+                alt="Service Image" class="service-image">
+          {% else %}
+            <img src="{{ url_for('static', filename='images/background.jpg') }}"
+                alt="Default Service Image" class="service-image">
+          {% endif %}
+          <span class="service-price">₹{{ service.price }}</span>
+        </div>
+        <div class="service-content">
+          <h3 class="service-title">{{ service.title }}</h3>
+          <p class="service-category">{{ service.category }}</p>
+          <p class="service-description">{{ service.description }}</p>
+        
+          {% if service.organizer %}
+          <div class="organizer-info">
+            <p><i class="fas fa-envelope"></i> {{ service.organizer.email }}</p>
+            <p><i class="fas fa-phone"></i> {{ service.organizer.mobile }}</p>
+          </div>
+          {% endif %}
+        
+          <div class="service-actions">
+            <a href="{{ url_for('review', service_id=service.id) }}" class="review-button">
+              <i class="fas fa-star"></i> Review
+            </a>
+            {% if 'user_id' in session and session['role'] == 'customer' %}
+            <form action="{{ url_for('place_order', service_id=service.id) }}" method="POST" class="inline-form">
+              <button type="submit" class="order-button"><i class="fas fa-shopping-cart"></i> Book Now</button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="no-service-message">No services available matching your criteria.</p>
+    {% endif %}
+  </div>
+</section>
 {% endblock %}

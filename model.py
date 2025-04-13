@@ -27,6 +27,10 @@ class Order(db.Model):
     customer_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     service_id = db.Column(db.Integer, db.ForeignKey('service.id'))
     status = db.Column(db.String(20))
+    
+    # Add relationships to access related objects
+    service = db.relationship('Service', backref='orders')
+    customer = db.relationship('User', backref='customer_orders')
 
 class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
