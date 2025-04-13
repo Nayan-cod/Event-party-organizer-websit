@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>Organizer Profile</h2>
+
+<p><strong>Name:</strong> {{ user.name }}</p>
+<p><strong>Email:</strong> {{ user.email }}</p>
+<p><strong>Mobile:</strong> {{ user.mobile }}</p>
+
+<h3>Your Services</h3>
+<ul>
+    {% for service in services %}
+        <li>
+            <strong>{{ service.title }}</strong> - ₹{{ service.price }}<br>
+            {{ service.description }}<br>
+            {% if service.image %}
+                <img src="{{ url_for('static', filename='uploads/' + service.image) }}" width="150" alt="Service Image">
+            {% endif %}
+        </li>
+    {% else %}
+        <li>No services added yet.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

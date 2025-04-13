@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+  <h2 class="text-2xl font-bold mb-4">Customer Dashboard</h2>
+  <h3 class="text-xl font-semibold mb-2">Available Services</h3>
+  <ul>
+    {% for service in services %}
+      <li class="mb-4 p-4 border rounded">
+        <strong>{{ service.title }}</strong> ({{ service.category }}) - ₹{{ service.price }}<br>
+        {{ service.description }}<br>
+        <form action="{{ url_for('place_order', service_id=service.id) }}" method="POST" class="mt-2">
+          <button type="submit" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">
+            Place Order
+          </button>
+        </form>
+      </li>
+    {% else %}
+      <li>No services available at the moment.</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

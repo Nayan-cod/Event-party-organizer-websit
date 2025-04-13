@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2 class="text-2xl font-semibold">Review: {{ service.title }}</h2>
+
+<form method="POST" class="my-4 p-4 bg-gray-100 rounded shadow w-full max-w-md">
+    {{ form.hidden_tag() }}
+
+    <label class="block font-medium mb-1">{{ form.rating.label }}</label>
+    {{ form.rating(class="mb-3 p-2 border rounded w-full") }}
+
+    <label class="block font-medium mb-1">{{ form.comment.label }}</label>
+    {{ form.comment(rows="4", class="mb-3 p-2 border rounded w-full") }}
+
+    {{ form.submit(class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700") }}
+</form>
+
+<h3 class="text-xl font-semibold mt-6 mb-2">All Reviews</h3>
+{% for review in reviews %}
+<div class="bg-white border p-3 rounded shadow mb-2">
+    <p><strong>Rating:</strong> {{ review.rating }} ⭐</p>
+    <p>{{ review.comment }}</p>
+</div>
+{% else %}
+<p>No reviews yet for this service.</p>
+{% endfor %}
+{% endblock %}

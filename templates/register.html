@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="auth-wrapper">
+    <h2>Register</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <label>{{ form.role.label }}</label>
+        {{ form.role }}
+        <label>{{ form.name.label }}</label>
+        {{ form.name }}
+        <label>{{ form.email.label }}</label>
+        {{ form.email }}
+        <label>{{ form.mobile.label }}</label>
+        {{ form.mobile }}
+        <label>{{ form.password.label }}</label>
+        {{ form.password }}
+        {{ form.submit }}
+    </form>
+</div>
+{% endblock %}

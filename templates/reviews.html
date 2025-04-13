@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>Service Reviews</h2>
+
+{% for review in reviews %}
+    <div class="review-card">
+        <strong>{{ review.service.title }}</strong><br>
+        ⭐ Rating: {{ review.rating }}<br>
+        "{{ review.comment }}"<br>
+        — by Customer #{{ review.customer_id }}
+        <hr>
+    </div>
+{% else %}
+    <p>No reviews submitted yet.</p>
+{% endfor %}
+{% endblock %}

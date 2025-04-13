@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2 class="services-heading">Our Services</h2>
+
+{% if services %}
+<div class="services-grid">
+    {% for service in services %}
+<div class="service-card">
+  {% if service.image %}
+    <img src="{{ url_for('static', filename='uploads/' + service.image) }}"
+         alt="Service Image" class="service-image">
+  {% endif %}
+  <h3 class="service-title">{{ service.title }}</h3>
+  <p class="service-category">{{ service.category }}</p>
+  <p class="service-price">₹{{ service.price }}</p>
+  <p class="service-description">{{ service.description }}</p>
+
+  {% if service.organizer %}
+  <p class="text-sm"><strong>Email:</strong> {{ service.organizer.email }}</p>
+  <p class="text-sm"><strong>Mobile:</strong> {{ service.organizer.mobile }}</p>
+  {% endif %}
+
+  <a href="{{ url_for('review', service_id=service.id) }}" class="review-button"> Review</a>
+</div>
+{% endfor %}
+
+{% else %}
+<p class="no-service-message">No services available right now.</p>
+{% endif %}
+{% endblock %}
