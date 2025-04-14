@@ -84,16 +84,34 @@ def contact():
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-        user = User(
-            role=form.role.data,
-            name=form.name.data,
-            email=form.email.data,
-            mobile=form.mobile.data,
-            password=form.password.data
-        )
-        db.session.add(user)
-        db.session.commit()
-        return redirect(url_for('login'))
+        # Check if email already exists
+        existing_user = User.query.filter_by(email=form.email.data).first()
+        if existing_user:
+            flash("Email address is already registered. Please use a different email.", "error")
+            return render_template('register.html', form=form)
+        
+        try:
+            user = User(
+                role=form.role.data,
+                name=form.name.data,
+                email=form.email.data,
+                mobile=form.mobile.data,
+                password=form.password.data
+            )
+            db.session.add(user)
+            db.session.commit()
+            flash("Registration successful! Please login.", "success")
+            return redirect(url_for('login'))
+        except Exception as e:
+            db.session.rollback()
+            flash("An error occurred during registration. Please try again.", "error")
+    
+    # If there are form validation errors
+    if form.errors:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{error}", "error")
+    
     return render_template('register.html', form=form)
 
 
@@ -107,11 +125,21 @@ def login():
         if user:
             session['user_id'] = user.id
             session['role'] = user.role
+            flash(f"Welcome back, {user.name}!", "success")
             if user.role == 'organizer':
                 return redirect(url_for('profile_organizer'))
             else:
                 return redirect(url_for('profile_customer'))
-    return render_template('login.html', form=form)  # Pass 'form' to template
+        else:
+            flash("Invalid email or password. Please try again.", "error")
+    
+    # If there are form validation errors
+    if form.errors:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{error}", "error")
+    
+    return render_template('login.html', form=form)
 
 
 @app.route('/add_service', methods=['GET', 'POST'])

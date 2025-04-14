@@ -675,6 +675,10 @@ form textarea {
     color: #666;
 }
 
+.submit-wrapper {
+    margin-top: 50px; /* Space before submit button */
+}
+
 .submit-btn {
     display: flex;
     align-items: center;
@@ -682,7 +686,7 @@ form textarea {
     gap: 10px;
     width: 100%;
     padding: 12px 20px;
-    background-color: #9c27b0; /* Updated to purple */
+    background-color: #9c27b0;
     color: white;
     border: none;
     border-radius: 8px;
@@ -690,12 +694,60 @@ form textarea {
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.3s, transform 0.3s;
-    margin-top: 30px;
+    margin-top: 0; /* Reset margin-top since we're using submit-wrapper */
 }
 
 .submit-btn:hover {
     background-color: #7b1fa2; /* Darker purple */
     transform: translateY(-3px);
+}
+
+/* Error message styling */
+.errors {
+    list-style: none;
+    padding: 5px 0;
+    margin: 0;
+    color: #dc3545;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.errors li {
+    margin-top: 5px;
+}
+
+/* Add a subtle background to error messages */
+.form-group .errors {
+    background-color: rgba(220, 53, 69, 0.05);
+    padding: 6px 10px;
+    border-radius: 4px;
+    border-left: 3px solid #dc3545;
+}
+
+.form-input.error,
+input.error,
+select.error,
+textarea.error {
+    border-color: #dc3545;
+}
+
+/* Ensure form styles are consistent */
+.auth-wrapper form .form-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #333;
+    background-color: #f9f9f9;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    margin-bottom: 5px; /* Add space between input and potential error */
+}
+
+.auth-wrapper form .form-input:focus {
+    border-color: #9c27b0;
+    box-shadow: 0 0 0 3px rgba(156, 39, 176, 0.2);
+    outline: none;
 }
 
 /* Rest of existing styles */
@@ -706,6 +758,10 @@ form textarea {
 /* Flash Messages */
 .flash-messages {
     margin-bottom: 20px;
+    position: relative;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .flash-message {
@@ -714,6 +770,8 @@ form textarea {
     margin-bottom: 15px;
     position: relative;
     animation: slideIn 0.4s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    font-weight: 500;
 }
 
 @keyframes slideIn {
